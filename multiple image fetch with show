@@ -1,0 +1,85 @@
+<?php
+session_start();
+include("config.php");
+$var=$_SESSION['login_user'];
+//echo $var;
+
+$queryl=mysqli_query($con,"SELECT * FROM registration where email='$var'");
+$rows = mysqli_fetch_array($queryl);
+?>
+<input type="text" name="name" value="<?php echo $rows['name'];?>">
+<input type="text" name="name" value="<?php echo $rows['email'];?>">
+<input type="text" name="name" value="<?php echo $rows['phone'];?>">
+<input type="text" name="name" value="<?php echo $rows['rand_no'];?>">
+
+<a href="show.php?id=<?php echo $rows['id'];?>">Show images</a>
+<!-- <input type="text" name="name" value="<?php echo $rows['name'];?>">
+ -->
+ <form method="POST" enctype="multipart/form-data">
+ <input type="file" name="files[]" multiple/>
+ <input type="submit" value="submit" name="submit" id="selectedButton"/>
+                  </form>
+<?php                  
+if(isset($_POST['submit']))           
+{
+ extract($_POST);
+
+    if(isset($_FILES['files']['name']))
+    {
+        $file_name_all="";
+        for($i=0; $i<count($_FILES['files']['name']); $i++) 
+        {
+               $tmpFilePath = $_FILES['files']['tmp_name'][$i];    
+               if ($tmpFilePath != "")
+               {    
+                   $path = "propertyimages/"; // create folder 
+                   $name = $_FILES['files']['name'][$i];
+                  $size = $_FILES['files']['size'][$i];
+
+                   list($txt, $ext) = explode(".", $name);
+                   $file= time().substr(str_replace(" ", "_", $txt), 0);
+                   $info = pathinfo($file);
+                   $filename = $file.".".$ext;
+                   if(move_uploaded_file($_FILES['files']['tmp_name'][$i], $path.$filename)) 
+                   { 
+                      $file_name_all.=$filename."*";
+                   }
+             }
+        }
+        $filepath = rtrim($file_name_all, ','); 
+
+    $query=mysqli_query($con,"UPDATE registration
+SET file_name = '".addslashes($filepath)."'
+WHERE email ='$var'");
+/*$query=mysqli_query($con,"INSERT into registration (`file_name`) VALUES('".addslashes($filepath)."'); ");    */
+        }
+        else
+    {
+        $filepath="";
+    }
+
+    /*if($query)
+    {
+       header("Location: admin_profile.php");
+    }*/
+}
+?>
+-------------------------------------
+show.php
+-----------------------
+<?php
+include("config.php");
+$id=$_GET['id'];
+$image=mysqli_query($con,"select * from registration where id='$id'");
+$data=mysqli_fetch_array($image);
+
+$images = explode("*",$data['file_name']);
+
+if(sizeof($images) > 0 ){
+  foreach($images as $image){
+   echo '<img src="propertyimages/'.$image.'">' ;
+   echo "<br />"; 
+  }
+}
+
+?>
