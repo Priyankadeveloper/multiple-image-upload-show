@@ -1,0 +1,10 @@
+$uploaddir = '../../img/';
+	    $uploadfile =  time().basename( $_FILES['image']['name']);
+    	$target_path = $uploaddir .$uploadfile;
+		
+		 if (move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) 
+		{    
+			$filename =", image = '".$uploadfile."'";
+			
+		}
+		echo $db->query("insert into `experaince` set `title`='".$_REQUEST['title']."',`text`='".$_REQUEST['des']."' $filename ");
